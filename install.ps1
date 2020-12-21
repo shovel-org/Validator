@@ -1,8 +1,14 @@
 # https://github.com/edymtt/nugetstandalone
-$destinationFolder = "$psscriptroot\packages"
-if ((Test-Path -path $destinationFolder)) {
-    Remove-Item -Path $destinationFolder -Recurse | Out-Null
+
+try {
+	Get-Command -Name 'nuget' -Type 'Application' -ErrorAction 'Stop' | Out-Null
+} catch {
+	Write-Host '''nuget'' not installed.' -ForegoundColor DarkRed
+	exit 258
 }
 
-New-Item $destinationFolder -Type Directory | Out-Null
+$destinationFolder = "$PSScriptRoot\packages"
+if (Test-Path $destinationFolder) { Remove-Item $destinationFolder -Recurse }
+New-Item $destinationFolder -Type 'Directory' | Out-Null
+
 nuget install packages.config -o $destinationFolder -ExcludeVersion
