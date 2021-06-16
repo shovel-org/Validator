@@ -49,7 +49,6 @@ namespace Scoop {
                         .Build()
                         .Deserialize(r);
                 }
-                fasdfsdaf
 
                 var js = new SerializerBuilder()
                     .JsonCompatible()
