@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
+using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
 namespace Scoop {
@@ -43,10 +44,12 @@ namespace Scoop {
                 isYaml = true;
                 object yamlObject;
                 using (var r = new StreamReader(file)) {
-                    yamlObject = new DeserializerBuilder().Build().Deserialize(r);
+                    yamlObject = new DeserializerBuilder()
+                        .WithNodeTypeResolver(new InferTypeFromValue())
+                        .Build()
+                        .Deserialize(r);
                 }
 
-                // Newtonsoft.Json.JsonSerializer js = new Newtonsoft.Json.JsonSerializer();
                 var js = new SerializerBuilder()
                     .JsonCompatible()
                     .Build();
@@ -59,9 +62,8 @@ namespace Scoop {
 
             try {
                 var parsedObject = JObject.Parse(File.ReadAllText(file, System.Text.Encoding.UTF8));
-                if (isYaml) {
-                    // File.Delete(file);
-                }
+                if (isYaml) { File.Delete(file); }
+
 
                 return parsedObject;
             } catch (Newtonsoft.Json.JsonReaderException e) {
@@ -144,6 +146,48 @@ namespace Scoop {
                     traverseErrors(error.ChildErrors, level + 1);
                 }
             }
+        }
+    }
+
+    // Helper class for workaround of boolean handling
+    public class InferTypeFromValue : INodeTypeResolver {
+        public bool Resolve(NodeEvent nodeEvent, ref Type currentType) {
+            string[] yamlBool = {
+                "y",
+                "Y",
+                "yes",
+                "Yes",
+                "YES",
+
+                "n",
+                "N",
+                "no",
+                "No",
+                "NO",
+
+                "true",
+                "True",
+                "TRUE",
+                "false",
+                "False",
+                "FALSE",
+                "on",
+                "On",
+                "ON",
+                "off",
+                "Off",
+                "OFF"
+            };
+            var scalar = nodeEvent as Scalar;
+
+            if (scalar != null) {
+                if (Array.Exists(yamlBool, (v) => { return v == scalar.Value; })) {
+                    currentType = typeof(bool);
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
