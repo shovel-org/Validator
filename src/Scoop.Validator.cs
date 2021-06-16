@@ -61,14 +61,13 @@ namespace Scoop {
             }
 
             try {
-                var parsedObject = JObject.Parse(File.ReadAllText(file, System.Text.Encoding.UTF8));
-                if (isYaml) { File.Delete(file); }
-
-                return parsedObject;
+                return JObject.Parse(File.ReadAllText(file, System.Text.Encoding.UTF8));
             } catch (Newtonsoft.Json.JsonReaderException e) {
                 throw new JsonParserException(Path.GetFileName(file), e.Message, e);
             } catch (FileNotFoundException e) {
                 throw e;
+            } finally {
+                if (isYaml) { File.Delete(file); }
             }
         }
 
