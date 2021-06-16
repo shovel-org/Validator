@@ -64,7 +64,6 @@ namespace Scoop {
                 var parsedObject = JObject.Parse(File.ReadAllText(file, System.Text.Encoding.UTF8));
                 if (isYaml) { File.Delete(file); }
 
-
                 return parsedObject;
             } catch (Newtonsoft.Json.JsonReaderException e) {
                 throw new JsonParserException(Path.GetFileName(file), e.Message, e);
@@ -152,6 +151,7 @@ namespace Scoop {
     // Helper class for workaround of boolean handling
     public class InferTypeFromValue : INodeTypeResolver {
         public bool Resolve(NodeEvent nodeEvent, ref Type currentType) {
+            // https://yaml.org/type/bool.html
             string[] yamlBool = {
                 "y",
                 "Y",
