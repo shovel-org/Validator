@@ -7,19 +7,19 @@ using System.Linq;
 namespace Scoop {
     public class Program {
         public static int Main(string[] args) {
-            bool ci = String.Format("{0}", Environment.GetEnvironmentVariable("CI")).ToLower() == "true";
-            bool valid = true;
-
             if (args.Length < 2) {
                 Console.WriteLine("Usage: validator.exe <schema> <manifest> [<manifest>...]");
                 return 1;
             }
 
+            bool ci = String.Format("{0}", Environment.GetEnvironmentVariable("CI")).ToLower() == "true";
+            bool valid = true;
 
             IList<string> manifests = args.ToList<String>();
             String schema = manifests.First();
             manifests.RemoveAt(0);
             String combinedArgs = String.Join("", manifests);
+
             if (combinedArgs.Contains("*") || combinedArgs.Contains("?")) {
                 try {
                     var path = new Uri(Path.Combine(Directory.GetCurrentDirectory(), combinedArgs)).LocalPath;
@@ -33,23 +33,25 @@ namespace Scoop {
             }
 
             Scoop.Validator validator = new Scoop.Validator(schema, ci);
+
             foreach (var manifest in manifests) {
                 if (validator.Validate(manifest)) {
-                    if (ci) {
-                        Console.WriteLine("      [+] {0} validates against the schema!", Path.GetFileName(manifest));
-                    } else {
-                        Console.WriteLine("- {0} validates against the schema!", Path.GetFileName(manifest));
-                    }
+                    var prefix = ci ? "      [+]" : "-";
+                    Console.WriteLine("{0} {1} validates against the schema!", prefix, Path.GetFileName(manifest));
                 } else {
-                    if (ci) {
-                        Console.WriteLine("      [-] {0} has {1} Error{2}!", Path.GetFileName(manifest), validator.Errors.Count, validator.Errors.Count > 1 ? "s" : "");
-                    } else {
-                        Console.WriteLine("- {0} has {1} Error{2}!", Path.GetFileName(manifest), validator.Errors.Count, validator.Errors.Count > 1 ? "s" : "");
-                    }
-                    valid = false;
-                    foreach (var error in validator.Errors) {
-                        Console.WriteLine(error);
-                    }
+                    var prefix = ci ? "      [-]" : "-";
+                    Console.WriteLine(
+                        "{0} {1} has {2} Error{3}",
+                        prefix,
+                        Path.GetFileName(manifest),
+                        validator.Errors.Count,
+                        validator.Errors.Count > 1 ? "s" : "");
+                }
+
+                valid = false;
+
+                foreach (var error in validator.Errors) {
+                    Console.WriteLine(error);
                 }
             }
 

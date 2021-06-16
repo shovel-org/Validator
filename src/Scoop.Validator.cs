@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
+using YamlDotNet.Serialization;
 
 namespace Scoop {
     public class JsonParserException : Exception {
@@ -37,8 +38,32 @@ namespace Scoop {
         }
 
         private JObject ParseManifest(string file) {
+            var isYaml = false;
+            if (file.EndsWith(".yml") || file.EndsWith(".yaml")) {
+                isYaml = true;
+                object yamlObject;
+                using (var r = new StreamReader(file)) {
+                    yamlObject = new DeserializerBuilder().Build().Deserialize(r);
+                }
+
+                // Newtonsoft.Json.JsonSerializer js = new Newtonsoft.Json.JsonSerializer();
+                var js = new SerializerBuilder()
+                    .JsonCompatible()
+                    .Build();
+
+                file = $"{file}-{new Random().Next(258, 258258)}.json";
+                using (StreamWriter writer = new StreamWriter(file)) {
+                    js.Serialize(writer, yamlObject);
+                }
+            }
+
             try {
-                return JObject.Parse(File.ReadAllText(file, System.Text.Encoding.UTF8));
+                var parsedObject = JObject.Parse(File.ReadAllText(file, System.Text.Encoding.UTF8));
+                if (isYaml) {
+                    // File.Delete(file);
+                }
+
+                return parsedObject;
             } catch (Newtonsoft.Json.JsonReaderException e) {
                 throw new JsonParserException(Path.GetFileName(file), e.Message, e);
             } catch (FileNotFoundException e) {
