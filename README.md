@@ -7,5 +7,5 @@ This is a helper program for [Scoop](https://scoop.sh), the Windows command-line
 ## Usage
 
 ```pwsh
-validator.exe <schema> <manifest> [<manifest>...]
+validator.exe <schema> <manifests>...
 ```

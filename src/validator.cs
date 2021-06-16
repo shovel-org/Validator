@@ -8,7 +8,7 @@ namespace Scoop {
     public class Program {
         public static int Main(string[] args) {
             if (args.Length < 2) {
-                Console.WriteLine("Usage: validator.exe <schema> <manifest> [<manifest>...]");
+                Console.WriteLine("Usage: validator.exe <schema> <manifests>...");
                 return 1;
             }
 
