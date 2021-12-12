@@ -45,13 +45,14 @@ namespace Scoop {
                         prefix,
                         Path.GetFileName(manifest),
                         validator.Errors.Count,
-                        validator.Errors.Count > 1 ? "s" : "");
-                }
+                        validator.Errors.Count > 1 ? "s" : ""
+                    );
 
-                valid = false;
+                    valid = false;
 
-                foreach (var error in validator.Errors) {
-                    Console.WriteLine(error);
+                    foreach (var error in validator.Errors) {
+                        Console.WriteLine(error);
+                    }
                 }
             }
 
