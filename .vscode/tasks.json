@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Validator",
+            "command": "./build.ps1",
+            "type": "shell",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+            },
+            "group": "build",
+        },
+        {
+            "label": "Install dependencies",
+            "command": "./install.ps1",
+            "type": "shell",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+            },
+            "group": "build",
+        },
+    ],
+}

@@ -14,7 +14,7 @@ if ((Get-ChildItem "$PSScriptRoot\packages" -Recurse).Count -eq 0) {
 }
 
 # Build
-Copy-Item "$PSScriptRoot\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll", "$PSScriptRoot\packages\Newtonsoft.Json.Schema\lib\net45\Newtonsoft.Json.Schema.dll" $build
+Copy-Item "$PSScriptRoot\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll", "$PSScriptRoot\packages\Newtonsoft.Json.Schema\lib\net45\Newtonsoft.Json.Schema.dll", "$PSscriptRoot\packages\YamlDotNet\lib\net45\YamlDotNet.dll" $build
 
 Write-Output 'Compiling Scoop.Validator.cs ...'
 $ScoopValidatorCs = @(
@@ -23,11 +23,12 @@ $ScoopValidatorCs = @(
     '/optimize'
     '/platform:anycpu'
     '/target:library'
-    "/reference:""$build\Newtonsoft.Json.dll"",""$build\Newtonsoft.Json.Schema.dll"""
+    "/reference:""$build\Newtonsoft.Json.dll"",""$build\Newtonsoft.Json.Schema.dll"",""$build\YamlDotNet.dll"""
     "/out:""$build\Scoop.Validator.dll"""
     "$src\Scoop.Validator.cs"
 )
 & $csc @ScoopValidatorCs
+if ($LASTEXITCODE -gt 0) { exit 1 }
 
 Write-Output 'Compiling validator.cs ...'
 $ValidatorCs = @(
@@ -41,9 +42,11 @@ $ValidatorCs = @(
     "$src\validator.cs"
 )
 & $csc @ValidatorCs
+if ($LASTEXITCODE -gt 0) { exit 1 }
 
 # Package
 7z a "$dist\validator.zip" "$build\*"
+if ($LASTEXITCODE -gt 0) { exit 1 }
 Get-ChildItem "$dist\*" | ForEach-Object {
     $checksum = (Get-FileHash -Path $_.FullName -Algorithm 'SHA256').Hash.ToLower()
     "$checksum *$($_.Name)" | Tee-Object -FilePath "$dist\$($_.Name).sha256" -Append
